@@ -1,0 +1,3 @@
+# production
+.env
+/node_modules
