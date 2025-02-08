@@ -1,3 +1,6 @@
 # production
 .env
 /node_modules
+
+# development
+package-lock.json

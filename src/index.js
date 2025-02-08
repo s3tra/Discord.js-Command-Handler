@@ -1,63 +1,79 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes } from "discord.js";
-import fs from "fs";
-import env from "dotenv";
+import {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  REST,
+  Routes,
+} from 'discord.js';
+import fs from 'fs';
 
-env.config();
-const bot = new Client({ 
-    intents: [
-        GatewayIntentBits.Guilds,
-    ]
+import dotenv from 'dotenv';
+dotenv.config();
+
+const commands = [];
+
+const bot = new Client({
+  intents: [GatewayIntentBits.Guilds],
 });
 
-bot.on("ready", async () => {
-    console.log(`${bot.user.username} is online.`);
+const setupEvents = async () => {
+  const eventFiles = fs
+    .readdirSync('./src/events/')
+    .filter((file) => file.endsWith('.js'));
 
-    // Event Handling
-    const events = fs.readdirSync("./events")
-        .filter((file) => file.endsWith(".js"));
+  for (const file of eventFiles) {
+    const event = import(`./events/${file}`);
 
-    // Register all events
-    for (const file of events) {
-        const { execute } = await import(`./events/${file}`);
-        const eventName = file.split(".")[0];
-        bot.on(eventName, (...args) => execute(...args));
+    if (event.execute) {
+      bot.on(file.replace('.js', ''), event.execute);
+    } else {
+      console.error(`${file} is missing essential exports.`);
+      return;
     }
+  }
+};
 
-    // Command Handling
-    bot.commands = new Collection();
-    const arrayCommands = [];
+const setupCommands = async () => {
+  bot.commands = new Collection();
 
-    const commands = fs.readdirSync("./commands")
-        .filter((file) => file.endsWith(".js"));
+  const commandFiles = fs
+    .readdirSync('./src/events/')
+    .filter((file) => file.endsWith('.js'));
 
-    // Register all commands
-    for (const file of commands) {
-        const command = await import(`./commands/${file}`);
-        
-        if (command.data && command.execute) {
-            bot.commands.set(command.data.name, command);
-            arrayCommands.push(command.data.toJSON());
-        } else {
-            console.error(`Command at ${file} is missing "data" or "execute" property.`);
-        }
+  for (const file of commandFiles) {
+    const command = import(`./commands/${file}`);
+
+    if (file.data && file.execute) {
+      bot.commands.push(command.data.name, command);
+      commands.push(command.data.toJSON());
+    } else {
+      console.error(`${file} is missing essential exports.`);
+      return;
     }
+  }
+};
 
-    // Register the commands with Discord's API
-    const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+const registerCommands = async () => {
+  const rest = new REST().setToken(process.env.token);
 
-    try {
-        // Register all commands at once
-        await rest.put(
-            Routes.applicationCommands(bot.user.id),
-            { body: arrayCommands }
-        );
-        
-        console.log("Successfully loaded (/) application commands.");
-    } catch (error) {
-        console.error("Error while registering commands:", error);
-    }
+  try {
+    await rest.put(Routes.applicationCommands(bot.application.id), {
+      body: commands,
+    });
+  } catch (error) {
+    console.error('An error occured while registering the commands: ', error);
+    return;
+  }
+
+  console.log(`${bot.user.username} | Loaded ${commands.length} (/) commands.`);
+};
+
+bot.on('ready', async () => {
+  await setupEvents();
+  await setupCommands();
+  await registerCommands();
+
+  console.log(`${bot.user.username} | Ready.`);
 });
-
-// Login
 
 bot.login(process.env.TOKEN);
