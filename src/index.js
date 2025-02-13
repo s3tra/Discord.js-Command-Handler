@@ -22,7 +22,7 @@ const setupEvents = async () => {
     .filter((file) => file.endsWith('.js'));
 
   for (const file of eventFiles) {
-    const event = import(`./events/${file}`);
+    const event = await import(`./events/${file}`);
 
     if (event.execute) {
       bot.on(file.replace('.js', ''), event.execute);
@@ -37,14 +37,14 @@ const setupCommands = async () => {
   bot.commands = new Collection();
 
   const commandFiles = fs
-    .readdirSync('./src/events/')
+    .readdirSync('./src/commands/')
     .filter((file) => file.endsWith('.js'));
 
   for (const file of commandFiles) {
-    const command = import(`./commands/${file}`);
+    const command = await import(`./commands/${file}`);
 
-    if (file.data && file.execute) {
-      bot.commands.push(command.data.name, command);
+    if (command.data && command.execute) {
+      bot.commands.set(command.data.name, command);
       commands.push(command.data.toJSON());
     } else {
       console.error(`${file} is missing essential exports.`);

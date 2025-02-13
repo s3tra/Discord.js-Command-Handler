@@ -1,4 +1,6 @@
-const execute = async () => {
+import { MessageFlags } from 'discord.js';
+
+const execute = async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const command = interaction.client.commands.get(interaction.commandName);
 
@@ -11,6 +13,11 @@ const execute = async () => {
     try {
       await command.execute(interaction);
     } catch (error) {
+      await interaction.reply({
+        content: 'An error occured while executing the command.',
+        flags: MessageFlags.Ephemeral,
+      });
+
       return console.error(
         `An error occured while executing ${interaction.commandName}: `,
         error
