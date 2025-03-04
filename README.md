@@ -1,3 +1,5 @@
+![Logo](./js.png?raw=true)
+
 <h3>Discord.js Command Handler</h3>
 <p>This is a simple command handler for Discord bots using the discord.js library. It streamlines the process of setting up a bot, allowing you to run slash commands right out of the box with just a bot token.</p>
 
