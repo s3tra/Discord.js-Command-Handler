@@ -54,7 +54,7 @@ const setupCommands = async () => {
 };
 
 const registerCommands = async () => {
-  const rest = new REST().setToken(process.env.token);
+  const rest = new REST().setToken(process.env.TOKEN);
 
   try {
     await rest.put(Routes.applicationCommands(bot.application.id), {
