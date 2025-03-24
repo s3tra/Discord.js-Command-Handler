@@ -2,6 +2,8 @@
 
 ### Discord.js Command Handler
 
+[![CodeFactor](https://www.codefactor.io/repository/github/s3tra/discord.js-command-handler/badge)](https://www.codefactor.io/repository/github/s3tra/discord.js-command-handler)
+
 This is a simple command handler for Discord bots using the discord.js library. It streamlines the process of setting up a bot, allowing you to run slash commands right out of the box with just a bot token.
 
 ### Getting Started
